@@ -18,3 +18,32 @@ Contoh harga berubah:
 ```
 
 Uang selalu integer IDR. Paginasi cursor mengikuti kontrak TownHall.
+
+## Amplop idempoten dan pemetaan ke registry Titeny (PSR-DATA-002)
+
+Rujukan: KONTEKS-LINTAS-DIVISI §3, ADR-0001 butir 1-2. Kode: `src/pipeline/amplop.py`, `src/pipeline/ingest.py`.
+
+Amplop wajib untuk setiap event yang dikirim ke Titeny:
+
+| Medan | Aturan |
+|---|---|
+| `event_id` | `evt_YYYYMMDD_NNNNNN` (tanggal UTC `occurred_at`, urut per hari); duplikat diabaikan |
+| `event_type` | salah satu dari 11 event registry Titeny; tidak ada jenis baru |
+| `schema_version` | semver kontrak (saat ini `1.0.0`) |
+| `source` | selalu `pasaree` |
+| `occurred_at` / `received_at` | ISO-8601 UTC, akhiran `Z` |
+| `batch_id` | pengelompok pengiriman |
+| `payload` | objek; isi event lokal tanpa `id`/`jenis`/`waktu` |
+
+Pemetaan event katalog lokal ke registry:
+
+| Event lokal | Registry Titeny | Catatan |
+|---|---|---|
+| `produk.dibuat` | (internal) | hanya pencarian-katalog dan metrik-lapak-aktif |
+| `harga.berubah` | (internal) | registry `harga.diperbarui` bukan milik Pasaree |
+| `stok.berubah` | (internal) | registry `stok.berubah` bersumber Lumbung |
+| `tayang.berubah` | `lapak.status_berubah` | hanya bila payload memuat `lapak_status` |
+
+Event yang diproduksi Pasaree ke Titeny: `transaksi.dibuat`, `lapak.status_berubah`, `logistik.biaya_diperbarui`, `vendor.status_berubah`.
+
+Pengiriman: `POST /api/v1/event/masuk`, header `X-Idempotency-Key` = `event_id`. Retry 3x (5/30/300 detik) untuk 5xx/408/429/galat jaringan, lalu DLQ; 4xx lain langsung DLQ. Respons `duplikat_diabaikan` dianggap sukses.
