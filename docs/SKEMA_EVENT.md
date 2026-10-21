@@ -47,3 +47,12 @@ Pemetaan event katalog lokal ke registry:
 Event yang diproduksi Pasaree ke Titeny: `transaksi.dibuat`, `lapak.status_berubah`, `logistik.biaya_diperbarui`, `vendor.status_berubah`.
 
 Pengiriman: `POST /api/v1/event/masuk`, header `X-Idempotency-Key` = `event_id`. Retry 3x (5/30/300 detik) untuk 5xx/408/429/galat jaringan, lalu DLQ; 4xx lain langsung DLQ. Respons `duplikat_diabaikan` dianggap sukses.
+
+## Alur ke konsumen (PSR-DATA-004)
+
+Kode: `src/pipeline/alur.py`; konsumen tercatat di `config/pipeline.yaml` (`pencarian-katalog`, `metrik-lapak-aktif`, `titeny`).
+
+1. Validasi skema (ULID, waktu ISO-8601 UTC, uang integer IDR); tidak valid -> DLQ (`tujuan: validasi`).
+2. Duplikat `id` diabaikan.
+3. Urutan terbalik: event lebih lama dari yang sudah diterima untuk (`produk_id`, `jenis`) dibuang (`usang`).
+4. Penyaluran per konsumen sesuai `jenis_event`; gagal -> retry 5/30/300 detik lalu DLQ per konsumen.
