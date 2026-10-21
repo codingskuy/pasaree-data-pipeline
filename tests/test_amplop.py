@@ -10,13 +10,13 @@ from pipeline.amplop import (
     validasi_amplop,
 )
 
-ULID_A = "01J0000000000000000000001"
-ULID_B = "01J0000000000000000000002"
+ULID_A = "01J00000000000000000000001"
+ULID_B = "01J00000000000000000000002"
 
 
 def ev(**kw):
     e = {"id": ULID_A, "jenis": "tayang.berubah", "waktu": "2026-01-01T00:00:00Z",
-         "lapak_id": "01J0000000000000000000000", "produk_id": "01J0000000000000000000009",
+         "lapak_id": "01J00000000000000000000000", "produk_id": "01J00000000000000000000009",
          "lapak_status": "BEKU"}
     e.update(kw)
     return e
@@ -62,7 +62,7 @@ def test_event_id_idempoten_per_ulid_dan_urut_per_hari():
     a1 = bungkus(ev(id=ULID_A), p, "b")
     a1b = bungkus(ev(id=ULID_A), p, "b")  # retry produsen
     a2 = bungkus(ev(id=ULID_B), p, "b")
-    hari_lain = bungkus(ev(id="01J0000000000000000000003", waktu="2026-01-02T01:00:00Z"), p, "b")
+    hari_lain = bungkus(ev(id="01J00000000000000000000003", waktu="2026-01-02T01:00:00Z"), p, "b")
     assert a1["event_id"] == a1b["event_id"] == "evt_20260101_000001"
     assert a2["event_id"] == "evt_20260101_000002"
     assert hari_lain["event_id"] == "evt_20260102_000001"

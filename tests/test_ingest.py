@@ -5,9 +5,9 @@ from pipeline.dlq import AntreanSuratMati
 from pipeline.ingest import PATH_INGEST, PengirimEvent
 
 
-def amplop(eid_ulid="01J0000000000000000000001"):
+def amplop(eid_ulid="01J00000000000000000000001"):
     e = {"id": eid_ulid, "jenis": "tayang.berubah", "waktu": "2026-01-01T00:00:00Z",
-         "lapak_id": "01J0000000000000000000000", "produk_id": "01J0000000000000000000009",
+         "lapak_id": "01J00000000000000000000000", "produk_id": "01J00000000000000000000009",
          "lapak_status": "AKTIF"}
     return bungkus(e, PembuatEventId(), "bat_1", received_at="2026-01-01T00:00:05Z")
 
