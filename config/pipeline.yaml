@@ -5,3 +5,14 @@ tujuan:
   - metrik-lapak-aktif
 format_waktu: ISO-8601-UTC
 format_id: ULID-string
+# Retry terkunci: 3x pada 5/30/300 detik, lalu DLQ.
+retry_detik: [5, 30, 300]
+# Konsumen tercatat (PSR-DATA-004). Tujuan di atas wajib terdaftar di sini.
+konsumen:
+  - nama: pencarian-katalog
+    jenis_event: [produk.dibuat, harga.berubah, stok.berubah, tayang.berubah]
+  - nama: metrik-lapak-aktif
+    jenis_event: [produk.dibuat, stok.berubah, tayang.berubah]
+  - nama: titeny
+    # Penyaluran lewat PengirimEvent (amplop + retry/DLQ sendiri); hanya event yang dipetakan.
+    jenis_event: [tayang.berubah]
